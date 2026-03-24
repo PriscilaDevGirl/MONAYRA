@@ -1,0 +1,59 @@
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
+
+class CandidateCreate(BaseModel):
+    social_name: str = Field(min_length=2)
+    self_declared_gender: str
+    city: str
+    state: str
+    headline: str
+    anonymity_level: str = "partial"
+    avatar_style: str = "stylized-cat"
+    avatar_palette: str = "sunrise"
+    avatar_accessory: str = "star-pin"
+    avatar_mood: str = "confident"
+    trajectory: str
+    real_skills: str
+    growth_story: str
+    years_out_of_market: int = 0
+    wants_restart_mode: bool = False
+    audio_pitch_url: Optional[str] = None
+    video_pitch_url: Optional[str] = None
+    legal_name: str
+    email: str
+    phone: str
+    document_id: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    consent_to_share_after_hire: bool = True
+
+
+class CandidatePublicRead(BaseModel):
+    id: int
+    social_name: str
+    self_declared_gender: str
+    city: str
+    state: str
+    headline: str
+    anonymity_level: str
+    avatar_style: str
+    avatar_palette: str
+    avatar_accessory: str
+    avatar_mood: str
+    trajectory: str
+    real_skills: str
+    growth_story: str
+    years_out_of_market: int
+    wants_restart_mode: bool
+    audio_pitch_url: Optional[str]
+    video_pitch_url: Optional[str]
+
+
+class CandidateSensitiveRead(BaseModel):
+    legal_name: str
+    email: str
+    phone: str
+    document_id: Optional[str]
+    linkedin_url: Optional[str]
+    consent_to_share_after_hire: bool
