@@ -81,12 +81,13 @@ For a local PostgreSQL instance:
 
 The frontend is ready for static deployment with:
 
+- `vercel.json` at the repository root for monorepo-style Vercel imports
 - `frontend/vercel.json`
 - `frontend/netlify.toml`
 
 Quick guide:
 
-1. If you connected the whole repository on Vercel, set the Root Directory to `frontend`.
+1. If you connected the whole repository on Vercel, you can either keep the Root Directory at the repository root using `vercel.json`, or set the Root Directory to `frontend`.
 2. Set `VITE_API_BASE_URL` to your public backend URL.
 3. Make sure the backend CORS configuration allows your Vercel domain.
 4. Use the generated public link to review the interface in the browser.
