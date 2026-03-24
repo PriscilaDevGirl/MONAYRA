@@ -64,7 +64,7 @@ Protected information is only released after the vacancy reaches a confirmed hir
 The frontend is a React/Vite structure prepared for local setup.
 
 1. Install Node.js 20+.
-2. Optionally create `frontend/.env` with `VITE_API_BASE_URL=http://localhost:8000/api`.
+2. Copy `frontend/.env.example` to `frontend/.env`.
 3. Run `npm install` inside `frontend/`.
 4. Run `npm run dev`.
 5. Open `http://localhost:5173`.
@@ -86,9 +86,10 @@ The frontend is ready for static deployment with:
 
 Quick guide:
 
-1. Set `VITE_API_BASE_URL` to your public backend URL.
-2. Publish the `frontend/` directory on Vercel or Netlify.
-3. Use the generated public link to review the interface in the browser.
+1. If you connected the whole repository on Vercel, set the Root Directory to `frontend`.
+2. Set `VITE_API_BASE_URL` to your public backend URL.
+3. Make sure the backend CORS configuration allows your Vercel domain.
+4. Use the generated public link to review the interface in the browser.
 
 ## Recommended next steps
 
