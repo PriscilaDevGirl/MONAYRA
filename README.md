@@ -85,6 +85,8 @@ The frontend is ready for static deployment with:
 - `frontend/vercel.json`
 - `frontend/netlify.toml`
 
+The backend deployment guide is available in `docs/deploy-backend.md`.
+
 Quick guide:
 
 1. If you connected the whole repository on Vercel, you can either keep the Root Directory at the repository root using `vercel.json`, or set the Root Directory to `frontend`.
