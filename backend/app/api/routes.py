@@ -5,7 +5,7 @@ from app.db.database import create_db_and_tables, get_session
 from app.models.auth import UserAccount
 from app.models.company import Company
 from app.models.job import JobApplication, JobPosting
-from app.models.user import CandidateProfile, SensitiveCandidateProfile
+from app.models.user import CandidateAsset, CandidateProfile, SensitiveCandidateProfile
 from app.schemas.auth import (
     CandidateRegistration,
     CandidateRegistrationRead,
@@ -77,6 +77,15 @@ def _create_candidate_profile(payload: CandidateCreate, session: Session) -> Can
         consent_to_share_after_hire=payload.consent_to_share_after_hire,
     )
     session.add(sensitive)
+    session.commit()
+
+    assets = CandidateAsset(
+        candidate_id=candidate.id,
+        portfolio_url=payload.portfolio_url,
+        resume_file_name=payload.resume_file_name,
+        resume_pdf_base64=payload.resume_pdf_base64,
+    )
+    session.add(assets)
     session.commit()
     return candidate
 
@@ -160,7 +169,19 @@ def me_candidate(
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate profile not found.")
 
-    return CandidateDashboardRead(profile=candidate)
+    sensitive = session.exec(
+        select(SensitiveCandidateProfile).where(SensitiveCandidateProfile.candidate_id == candidate.id)
+    ).first()
+    assets = session.exec(
+        select(CandidateAsset).where(CandidateAsset.candidate_id == candidate.id)
+    ).first()
+
+    return CandidateDashboardRead(
+        profile=candidate,
+        linkedin_url=sensitive.linkedin_url if sensitive else None,
+        portfolio_url=assets.portfolio_url if assets else None,
+        resume_file_name=assets.resume_file_name if assets else None,
+    )
 
 
 @api_router.get("/auth/me/company", response_model=CompanyDashboardRead)

@@ -26,6 +26,9 @@ class CandidateCreate(BaseModel):
     phone: str
     document_id: Optional[str] = None
     linkedin_url: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    resume_file_name: Optional[str] = None
+    resume_pdf_base64: Optional[str] = None
     consent_to_share_after_hire: bool = True
 
 
@@ -61,3 +64,6 @@ class CandidateSensitiveRead(BaseModel):
 
 class CandidateDashboardRead(BaseModel):
     profile: CandidatePublicRead
+    linkedin_url: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    resume_file_name: Optional[str] = None

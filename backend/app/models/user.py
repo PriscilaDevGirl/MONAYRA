@@ -36,3 +36,12 @@ class SensitiveCandidateProfile(SQLModel, table=True):
     linkedin_url: Optional[str] = None
     consent_to_share_after_hire: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+
+
+class CandidateAsset(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    candidate_id: int = Field(foreign_key="candidateprofile.id", unique=True, index=True)
+    portfolio_url: Optional[str] = None
+    resume_file_name: Optional[str] = None
+    resume_pdf_base64: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)

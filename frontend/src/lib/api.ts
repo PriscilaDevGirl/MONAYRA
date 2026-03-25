@@ -28,6 +28,13 @@ export type CandidateProfile = {
   video_pitch_url?: string | null;
 };
 
+export type CandidateDashboard = {
+  profile: CandidateProfile;
+  linkedin_url?: string | null;
+  portfolio_url?: string | null;
+  resume_file_name?: string | null;
+};
+
 export type SensitiveCandidateProfile = {
   legal_name: string;
   email: string;
@@ -85,10 +92,6 @@ export type CompanyDashboard = {
   bias_alert: string;
 };
 
-export type CandidateDashboard = {
-  profile: CandidateProfile;
-};
-
 export type CandidateApplicationDetails = JobApplication & {
   job: JobPosting;
   company: CompanyProfile;
@@ -123,6 +126,9 @@ export type CandidateRegistrationPayload = {
     phone: string;
     document_id?: string | null;
     linkedin_url?: string | null;
+    portfolio_url?: string | null;
+    resume_file_name?: string | null;
+    resume_pdf_base64?: string | null;
     consent_to_share_after_hire: boolean;
   };
   password: string;

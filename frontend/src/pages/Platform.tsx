@@ -353,6 +353,23 @@ const Platform = () => {
     setStatus(`Curriculo ${file.name} pronto para o cadastro.`);
   }
 
+  async function readFileAsBase64(file: File) {
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        if (typeof result !== "string") {
+          reject(new Error("Nao foi possivel ler o curriculo."));
+          return;
+        }
+        const base64 = result.includes(",") ? result.split(",")[1] : result;
+        resolve(base64);
+      };
+      reader.onerror = () => reject(new Error("Nao foi possivel ler o curriculo."));
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function registerCandidate(event: FormEvent) {
     event.preventDefault();
     const validationError = validateCandidateForm();
@@ -363,14 +380,18 @@ const Platform = () => {
     setBusy(true);
     setStatus("Criando perfil com avatar protegido.");
     try {
+      const resumeBase64 = resumeFile ? await readFileAsBase64(resumeFile) : null;
       await api.registerCandidate({
         profile: {
           ...candidateForm,
           years_out_of_market: Number(candidateForm.years_out_of_market || 0),
           document_id: candidateForm.document_id || null,
           linkedin_url: candidateForm.linkedin_url || null,
-          audio_pitch_url: resumeFile ? `arquivo:${candidateForm.resume_file_name}` : candidateForm.audio_pitch_url || null,
-          video_pitch_url: candidateForm.portfolio_url || candidateForm.video_pitch_url || null,
+          portfolio_url: candidateForm.portfolio_url || null,
+          resume_file_name: candidateForm.resume_file_name || null,
+          resume_pdf_base64: resumeBase64,
+          audio_pitch_url: candidateForm.audio_pitch_url || null,
+          video_pitch_url: candidateForm.video_pitch_url || null,
         },
         password: candidateForm.password,
       });
@@ -380,7 +401,7 @@ const Platform = () => {
       setResumeFile(null);
       await refresh();
       await refreshSessionData(nextSession);
-      setStatus("Candidata cadastrada e autenticada. LinkedIn, portfolio e referencia do curriculo foram enviados.");
+      setStatus("Candidata cadastrada e autenticada. LinkedIn, portfolio e curriculo foram armazenados.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Falha ao cadastrar candidata.");
     } finally {
