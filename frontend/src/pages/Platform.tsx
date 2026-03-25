@@ -49,6 +49,8 @@ const candidateBase = {
   phone: "",
   document_id: "",
   linkedin_url: "",
+  portfolio_url: "",
+  resume_file_name: "",
   consent_to_share_after_hire: true,
   password: "",
 };
@@ -80,6 +82,66 @@ const companyFiltersBase = {
   stage: "all",
   jobId: "all",
 };
+const brazilianStates = [
+  { value: "AC", label: "Acre" },
+  { value: "AL", label: "Alagoas" },
+  { value: "AP", label: "Amapa" },
+  { value: "AM", label: "Amazonas" },
+  { value: "BA", label: "Bahia" },
+  { value: "CE", label: "Ceara" },
+  { value: "DF", label: "Distrito Federal" },
+  { value: "ES", label: "Espirito Santo" },
+  { value: "GO", label: "Goias" },
+  { value: "MA", label: "Maranhao" },
+  { value: "MT", label: "Mato Grosso" },
+  { value: "MS", label: "Mato Grosso do Sul" },
+  { value: "MG", label: "Minas Gerais" },
+  { value: "PA", label: "Para" },
+  { value: "PB", label: "Paraiba" },
+  { value: "PR", label: "Parana" },
+  { value: "PE", label: "Pernambuco" },
+  { value: "PI", label: "Piaui" },
+  { value: "RJ", label: "Rio de Janeiro" },
+  { value: "RN", label: "Rio Grande do Norte" },
+  { value: "RS", label: "Rio Grande do Sul" },
+  { value: "RO", label: "Rondonia" },
+  { value: "RR", label: "Roraima" },
+  { value: "SC", label: "Santa Catarina" },
+  { value: "SP", label: "Sao Paulo" },
+  { value: "SE", label: "Sergipe" },
+  { value: "TO", label: "Tocantins" },
+];
+const genderOptions = [
+  { value: "mulher_cis", label: "Mulher cis" },
+  { value: "mulher_trans", label: "Mulher trans" },
+  { value: "travesti", label: "Travesti" },
+];
+const avatarStyleOptions = [
+  { value: "stylized-cat", label: "Gata estilizada" },
+  { value: "cyber-cat", label: "Gata cyber" },
+  { value: "soft-cat", label: "Gata delicada" },
+  { value: "guardian-cat", label: "Gata guardia" },
+  { value: "moon-cat", label: "Gata lunar" },
+];
+const avatarPaletteOptions = [
+  { value: "sunrise", label: "Nascer do sol" },
+  { value: "aurora", label: "Aurora" },
+  { value: "midnight", label: "Meia-noite" },
+  { value: "blossom", label: "Floracao" },
+];
+const avatarAccessoryOptions = [
+  { value: "star-pin", label: "Broche de estrela" },
+  { value: "crown", label: "Coroa" },
+  { value: "headset", label: "Headset" },
+  { value: "leaf-tag", label: "Folha" },
+  { value: "shield-badge", label: "Escudo" },
+];
+const avatarMoodOptions = [
+  { value: "confident", label: "Confiante" },
+  { value: "playful", label: "Brincalhona" },
+  { value: "focused", label: "Focada" },
+  { value: "calm", label: "Calma" },
+];
 
 function getStoredSession() {
   try {
@@ -118,7 +180,7 @@ function AvatarSelect({
 }: {
   value: string;
   onValueChange: (value: string) => void;
-  items: string[];
+  items: { value: string; label: string }[];
 }) {
   return (
     <Select value={value} onValueChange={onValueChange}>
@@ -127,8 +189,8 @@ function AvatarSelect({
       </SelectTrigger>
       <SelectContent>
         {items.map((item) => (
-          <SelectItem key={item} value={item}>
-            {item}
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>
@@ -145,6 +207,7 @@ const Platform = () => {
   const [candidateLogin, setCandidateLogin] = useState({ email: "", password: "" });
   const [companyLogin, setCompanyLogin] = useState({ email: "", password: "" });
   const [companyFilters, setCompanyFilters] = useState(companyFiltersBase);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [candidates, setCandidates] = useState<CandidateProfile[]>([]);
   const [companies, setCompanies] = useState<CompanyProfile[]>([]);
@@ -152,7 +215,7 @@ const Platform = () => {
   const [companyDashboard, setCompanyDashboard] = useState<CompanyDashboard | null>(null);
   const [candidateApplications, setCandidateApplications] = useState<CandidateApplicationDetails[]>([]);
   const [companyApplications, setCompanyApplications] = useState<CompanyApplicationDetails[]>([]);
-  const [status, setStatus] = useState("Fluxo protegido de cadastro, triagem e contratacao ativo.");
+  const [status, setStatus] = useState("Fluxo protegido de cadastro, triagem e contratação ativo.");
   const [busy, setBusy] = useState(false);
   const [stageDrafts, setStageDrafts] = useState<Record<number, string>>({});
   const [feedbackDrafts, setFeedbackDrafts] = useState<Record<number, string>>({});
@@ -235,8 +298,68 @@ const Platform = () => {
     };
   }
 
+  function validatePassword(password: string) {
+    if (password.length < 8 || password.length > 12) {
+      return "A senha deve ter entre 8 e 12 caracteres.";
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "A senha precisa ter pelo menos uma letra maiuscula.";
+    }
+    if (!/[a-z]/.test(password)) {
+      return "A senha precisa ter pelo menos uma letra minuscula.";
+    }
+    if (!/[0-9]/.test(password)) {
+      return "A senha precisa ter pelo menos um numero.";
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+      return "A senha precisa ter pelo menos um caractere especial.";
+    }
+    return null;
+  }
+
+  function validateCandidateForm() {
+    const passwordError = validatePassword(candidateForm.password);
+    if (passwordError) return passwordError;
+    if (!candidateForm.state) return "Selecione o estado.";
+    if (!candidateForm.self_declared_gender) return "Selecione a identidade de genero.";
+    if (candidateForm.linkedin_url && !/^https?:\/\//i.test(candidateForm.linkedin_url)) {
+      return "Informe o LinkedIn com http:// ou https://.";
+    }
+    if (candidateForm.portfolio_url && !/^https?:\/\//i.test(candidateForm.portfolio_url)) {
+      return "Informe o portfolio com http:// ou https://.";
+    }
+    return null;
+  }
+
+  function handleResumeFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] || null;
+    if (!file) {
+      setResumeFile(null);
+      setCandidateForm((current) => ({ ...current, resume_file_name: "" }));
+      return;
+    }
+    if (file.type !== "application/pdf") {
+      setStatus("O curriculo deve ser enviado em PDF.");
+      event.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setStatus("O PDF do curriculo deve ter no maximo 5 MB.");
+      event.target.value = "";
+      return;
+    }
+    setResumeFile(file);
+    setCandidateForm((current) => ({ ...current, resume_file_name: file.name }));
+    setStatus(`Curriculo ${file.name} pronto para o cadastro.`);
+  }
+
   async function registerCandidate(event: FormEvent) {
     event.preventDefault();
+    const validationError = validateCandidateForm();
+    if (validationError) {
+      setStatus(validationError);
+      return;
+    }
     setBusy(true);
     setStatus("Criando perfil com avatar protegido.");
     try {
@@ -244,19 +367,20 @@ const Platform = () => {
         profile: {
           ...candidateForm,
           years_out_of_market: Number(candidateForm.years_out_of_market || 0),
-          audio_pitch_url: candidateForm.audio_pitch_url || null,
-          video_pitch_url: candidateForm.video_pitch_url || null,
           document_id: candidateForm.document_id || null,
           linkedin_url: candidateForm.linkedin_url || null,
+          audio_pitch_url: resumeFile ? `arquivo:${candidateForm.resume_file_name}` : candidateForm.audio_pitch_url || null,
+          video_pitch_url: candidateForm.portfolio_url || candidateForm.video_pitch_url || null,
         },
         password: candidateForm.password,
       });
       const nextSession = await api.login({ email: candidateForm.email, password: candidateForm.password });
       setSession(nextSession);
       setCandidateForm(candidateBase);
+      setResumeFile(null);
       await refresh();
       await refreshSessionData(nextSession);
-      setStatus("Candidata cadastrada e autenticada.");
+      setStatus("Candidata cadastrada e autenticada. LinkedIn, portfolio e referencia do curriculo foram enviados.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Falha ao cadastrar candidata.");
     } finally {
@@ -266,6 +390,11 @@ const Platform = () => {
 
   async function registerCompany(event: FormEvent) {
     event.preventDefault();
+    const passwordError = validatePassword(companyForm.password);
+    if (passwordError) {
+      setStatus(passwordError);
+      return;
+    }
     setBusy(true);
     setStatus("Criando conta da empresa.");
     try {
@@ -407,7 +536,7 @@ const Platform = () => {
       setSensitiveMap((current) => ({ ...current, [applicationId]: data }));
       setStatus("Dados sensiveis liberados.");
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Os dados seguem bloqueados ate a contratacao.");
+      setStatus(error instanceof Error ? error.message : "Os dados seguem bloqueados até a contratação.");
     } finally {
       setBusy(false);
     }
@@ -424,12 +553,12 @@ const Platform = () => {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <Badge variant="outline" className="mb-4 border-white/10 bg-white/5">Produto operacional</Badge>
-              <h1 className="font-display text-4xl font-bold md:text-6xl">Contratacao tipo ATS com avatar de gato e privacidade por padrao.</h1>
-              <p className="mt-4 text-muted-foreground">A candidata cria um perfil de jogo, a empresa opera um funil tipo Gupy e os dados sensiveis so aparecem apos contratacao e consentimento.</p>
+              <h1 className="font-display text-4xl font-bold md:text-6xl">Contratação tipo ATS com avatar de gato e privacidade por padrão.</h1>
+              <p className="mt-4 text-muted-foreground">A candidata cria um perfil de jogo, a empresa opera um funil tipo Gupy e os dados sensíveis só aparecem após contratação e consentimento.</p>
             </div>
             <div className="grid gap-3 md:grid-cols-3">
               <MiniMetric title="Perfil de jogo" value="Avatar customizavel e narrativa profissional" />
-              <MiniMetric title="Pipeline" value="Cadastro, triagem, entrevista, oferta e contratacao" />
+              <MiniMetric title="Pipeline" value="Cadastro, triagem, entrevista, oferta e contratação" />
               <MiniMetric title="Dado protegido" value="Nome legal, email e documento bloqueados" />
             </div>
           </div>
@@ -483,23 +612,45 @@ const Platform = () => {
                       <p className="text-sm text-muted-foreground">Preview do avatar publico</p>
                     </div>
                     <Input name="social_name" placeholder="Nome social" value={candidateForm.social_name} onChange={updateSetter(setCandidateForm)} required />
-                    <Input name="self_declared_gender" placeholder="Genero autodeclarado" value={candidateForm.self_declared_gender} onChange={updateSetter(setCandidateForm)} required />
+                    <Select value={candidateForm.self_declared_gender} onValueChange={(value) => setCandidateForm((current) => ({ ...current, self_declared_gender: value }))}>
+                      <SelectTrigger><SelectValue placeholder="Identidade de genero" /></SelectTrigger>
+                      <SelectContent>
+                        {genderOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                     <Input name="headline" placeholder="Como voce quer se apresentar" value={candidateForm.headline} onChange={updateSetter(setCandidateForm)} required className="md:col-span-2" />
                     <Input name="city" placeholder="Cidade" value={candidateForm.city} onChange={updateSetter(setCandidateForm)} required />
-                    <Input name="state" placeholder="Estado" value={candidateForm.state} onChange={updateSetter(setCandidateForm)} required />
-                    <AvatarSelect value={candidateForm.avatar_style} onValueChange={(value) => setCandidateForm((current) => ({ ...current, avatar_style: value }))} items={["stylized-cat", "cyber-cat", "soft-cat", "guardian-cat", "moon-cat"]} />
-                    <AvatarSelect value={candidateForm.avatar_palette} onValueChange={(value) => setCandidateForm((current) => ({ ...current, avatar_palette: value }))} items={["sunrise", "aurora", "midnight", "blossom"]} />
-                    <AvatarSelect value={candidateForm.avatar_accessory} onValueChange={(value) => setCandidateForm((current) => ({ ...current, avatar_accessory: value }))} items={["star-pin", "crown", "headset", "leaf-tag", "shield-badge"]} />
-                    <AvatarSelect value={candidateForm.avatar_mood} onValueChange={(value) => setCandidateForm((current) => ({ ...current, avatar_mood: value }))} items={["confident", "playful", "focused", "calm"]} />
+                    <Select value={candidateForm.state} onValueChange={(value) => setCandidateForm((current) => ({ ...current, state: value }))}>
+                      <SelectTrigger><SelectValue placeholder="Estado" /></SelectTrigger>
+                      <SelectContent>
+                        {brazilianStates.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <AvatarSelect value={candidateForm.avatar_style} onValueChange={(value) => setCandidateForm((current) => ({ ...current, avatar_style: value }))} items={avatarStyleOptions} />
+                    <AvatarSelect value={candidateForm.avatar_palette} onValueChange={(value) => setCandidateForm((current) => ({ ...current, avatar_palette: value }))} items={avatarPaletteOptions} />
+                    <AvatarSelect value={candidateForm.avatar_accessory} onValueChange={(value) => setCandidateForm((current) => ({ ...current, avatar_accessory: value }))} items={avatarAccessoryOptions} />
+                    <AvatarSelect value={candidateForm.avatar_mood} onValueChange={(value) => setCandidateForm((current) => ({ ...current, avatar_mood: value }))} items={avatarMoodOptions} />
                     <Textarea name="trajectory" placeholder="Trajetoria" value={candidateForm.trajectory} onChange={updateSetter(setCandidateForm)} required className="md:col-span-2" />
                     <Textarea name="real_skills" placeholder="Habilidades separadas por virgula" value={candidateForm.real_skills} onChange={updateSetter(setCandidateForm)} required className="md:col-span-2" />
                     <Textarea name="growth_story" placeholder="Historia de crescimento" value={candidateForm.growth_story} onChange={updateSetter(setCandidateForm)} required className="md:col-span-2" />
+                    <Input name="linkedin_url" placeholder="LinkedIn" value={candidateForm.linkedin_url} onChange={updateSetter(setCandidateForm)} />
+                    <Input name="portfolio_url" placeholder="Portfolio" value={candidateForm.portfolio_url} onChange={updateSetter(setCandidateForm)} />
                     <Input name="email" type="email" placeholder="Email protegido" value={candidateForm.email} onChange={updateSetter(setCandidateForm)} required />
                     <Input name="phone" placeholder="Telefone protegido" value={candidateForm.phone} onChange={updateSetter(setCandidateForm)} required />
                     <Input name="legal_name" placeholder="Nome legal protegido" value={candidateForm.legal_name} onChange={updateSetter(setCandidateForm)} required />
                     <Input name="password" type="password" placeholder="Senha" value={candidateForm.password} onChange={updateSetter(setCandidateForm)} required />
+                    <div className="md:col-span-2 rounded-2xl border border-white/10 bg-black/20 p-4">
+                      <label className="mb-2 block text-sm text-muted-foreground">Curriculo em PDF</label>
+                      <Input type="file" accept="application/pdf,.pdf" onChange={handleResumeFileChange} />
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {candidateForm.resume_file_name ? `Arquivo selecionado: ${candidateForm.resume_file_name}` : "Aceita apenas PDF com ate 5 MB."}
+                      </p>
+                    </div>
+                    <p className="md:col-span-2 text-xs text-muted-foreground">
+                      Senha segura: 8 a 12 caracteres, com letra maiuscula, minuscula, numero e simbolo.
+                    </p>
                     <label className="md:col-span-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground"><Checkbox checked={candidateForm.wants_restart_mode} onCheckedChange={(checked) => setCandidateForm((current) => ({ ...current, wants_restart_mode: Boolean(checked) }))} />Ativar modo recomeco</label>
-                    <label className="md:col-span-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground"><Checkbox checked={candidateForm.consent_to_share_after_hire} onCheckedChange={(checked) => setCandidateForm((current) => ({ ...current, consent_to_share_after_hire: Boolean(checked) }))} />Liberar dados sensiveis somente apos contratacao</label>
+                    <label className="md:col-span-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground"><Checkbox checked={candidateForm.consent_to_share_after_hire} onCheckedChange={(checked) => setCandidateForm((current) => ({ ...current, consent_to_share_after_hire: Boolean(checked) }))} />Liberar dados sensíveis somente após contratação</label>
                     <Button type="submit" variant="hero" className="md:col-span-2" disabled={busy}>Criar perfil</Button>
                   </form>
                 )}
@@ -592,8 +743,8 @@ const Platform = () => {
 
             <Card className="glass border-white/10 bg-white/5">
               <CardHeader>
-                <CardTitle>Pipeline de contratacao</CardTitle>
-                <CardDescription>Visao da empresa sem acesso aos dados sensiveis antes da hora.</CardDescription>
+                <CardTitle>Pipeline de contratação</CardTitle>
+                <CardDescription>Visão da empresa sem acesso aos dados sensíveis antes da hora.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {session?.role !== "company" ? <Empty text="Entre como empresa para ver o pipeline." /> : companyApplications.length === 0 ? <Empty text="Ainda nao ha candidaturas no funil." /> : <>
