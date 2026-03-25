@@ -13,3 +13,11 @@ class CompanyCreate(BaseModel):
 
 class CompanyRead(CompanyCreate):
     id: int
+
+
+class CompanyDashboardRead(BaseModel):
+    company: CompanyRead
+    open_positions: int
+    applications_in_pipeline: int
+    average_compatibility_score: float
+    bias_alert: str

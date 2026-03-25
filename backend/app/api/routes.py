@@ -14,9 +14,17 @@ from app.schemas.auth import (
     LoginRequest,
     TokenRead,
 )
-from app.schemas.candidate import CandidateCreate, CandidatePublicRead, CandidateSensitiveRead
-from app.schemas.company import CompanyCreate, CompanyRead
-from app.schemas.job import ApplicationCreate, ApplicationRead, ApplicationStageUpdate, JobCreate, JobRead
+from app.schemas.candidate import CandidateCreate, CandidateDashboardRead, CandidatePublicRead, CandidateSensitiveRead
+from app.schemas.company import CompanyCreate, CompanyDashboardRead, CompanyRead
+from app.schemas.job import (
+    ApplicationCreate,
+    ApplicationRead,
+    ApplicationStageUpdate,
+    CandidateApplicationRead,
+    CompanyApplicationRead,
+    JobCreate,
+    JobRead,
+)
 from app.services.auth import (
     create_access_token,
     get_account_by_email,
@@ -140,6 +148,51 @@ def me(account: UserAccount = Depends(get_current_account)) -> TokenRead:
     )
 
 
+@api_router.get("/auth/me/candidate", response_model=CandidateDashboardRead)
+def me_candidate(
+    session: Session = Depends(get_session),
+    account: UserAccount = Depends(require_role("candidate")),
+) -> CandidateDashboardRead:
+    if account.candidate_id is None:
+        raise HTTPException(status_code=404, detail="Candidate account is not linked to a profile.")
+
+    candidate = session.get(CandidateProfile, account.candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate profile not found.")
+
+    return CandidateDashboardRead(profile=candidate)
+
+
+@api_router.get("/auth/me/company", response_model=CompanyDashboardRead)
+def me_company(
+    session: Session = Depends(get_session),
+    account: UserAccount = Depends(require_role("company")),
+) -> CompanyDashboardRead:
+    if account.company_id is None:
+        raise HTTPException(status_code=404, detail="Company account is not linked to a company profile.")
+
+    company = session.get(Company, account.company_id)
+    if not company:
+        raise HTTPException(status_code=404, detail="Company profile not found.")
+
+    jobs = session.exec(select(JobPosting).where(JobPosting.company_id == company.id)).all()
+    job_ids = {job.id for job in jobs}
+    applications = session.exec(select(JobApplication)).all()
+    filtered_apps = [app for app in applications if app.job_id in job_ids]
+
+    return CompanyDashboardRead(
+        company=company,
+        open_positions=len([job for job in jobs if job.is_active]),
+        applications_in_pipeline=len(filtered_apps),
+        average_compatibility_score=round(
+            sum(app.compatibility_score for app in filtered_apps) / len(filtered_apps), 2
+        )
+        if filtered_apps
+        else 0.0,
+        bias_alert="Review job requirements for unnecessary experience barriers.",
+    )
+
+
 @api_router.post("/candidates", response_model=CandidatePublicRead, status_code=status.HTTP_201_CREATED)
 def create_candidate(payload: CandidateCreate, session: Session = Depends(get_session)) -> CandidateProfile:
     return _create_candidate_profile(payload, session)
@@ -251,6 +304,71 @@ def create_application(payload: ApplicationCreate, session: Session = Depends(ge
 def list_applications(session: Session = Depends(get_session)) -> list[JobApplication]:
     statement = select(JobApplication).order_by(JobApplication.compatibility_score.desc())
     return session.exec(statement).all()
+
+
+@api_router.get("/applications/me/candidate", response_model=list[CandidateApplicationRead])
+def list_my_candidate_applications(
+    session: Session = Depends(get_session),
+    account: UserAccount = Depends(require_role("candidate")),
+) -> list[CandidateApplicationRead]:
+    if account.candidate_id is None:
+        raise HTTPException(status_code=404, detail="Candidate account is not linked to a profile.")
+
+    applications = session.exec(
+        select(JobApplication).where(JobApplication.candidate_id == account.candidate_id)
+    ).all()
+
+    result: list[CandidateApplicationRead] = []
+    for application in applications:
+        job = session.get(JobPosting, application.job_id)
+        if not job:
+            continue
+        company = session.get(Company, job.company_id)
+        if not company:
+            continue
+
+        result.append(
+            CandidateApplicationRead(
+                **application.model_dump(),
+                job=job,
+                company=company,
+            )
+        )
+
+    return result
+
+
+@api_router.get("/applications/me/company", response_model=list[CompanyApplicationRead])
+def list_my_company_applications(
+    session: Session = Depends(get_session),
+    account: UserAccount = Depends(require_role("company")),
+) -> list[CompanyApplicationRead]:
+    if account.company_id is None:
+        raise HTTPException(status_code=404, detail="Company account is not linked to a profile.")
+
+    jobs = session.exec(select(JobPosting).where(JobPosting.company_id == account.company_id)).all()
+    job_map = {job.id: job for job in jobs}
+    applications = session.exec(select(JobApplication)).all()
+
+    result: list[CompanyApplicationRead] = []
+    for application in applications:
+        job = job_map.get(application.job_id)
+        if not job:
+            continue
+
+        candidate = session.get(CandidateProfile, application.candidate_id)
+        if not candidate:
+            continue
+
+        result.append(
+            CompanyApplicationRead(
+                **application.model_dump(),
+                job=job,
+                candidate=candidate,
+            )
+        )
+
+    return result
 
 
 @api_router.patch("/applications/{application_id}", response_model=ApplicationRead)

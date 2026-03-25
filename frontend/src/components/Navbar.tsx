@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,29 +15,27 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass">
-      <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <a href="/" className="text-2xl font-display font-bold text-gradient">
+    <nav className="fixed left-0 right-0 top-0 z-50 glass">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        <Link to="/" className="text-2xl font-display font-bold text-gradient">
           MONAYRA
-        </a>
+        </Link>
 
-        {/* Desktop */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden items-center gap-6 md:flex">
           {links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <a key={link.href} href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               {link.label}
             </a>
           ))}
-          <Button variant="glass" size="sm">Entrar</Button>
-          <Button variant="hero" size="sm">Criar Conta</Button>
+          <Button variant="glass" size="sm" asChild>
+            <Link to="/plataforma">Entrar</Link>
+          </Button>
+          <Button variant="hero" size="sm" asChild>
+            <Link to="/plataforma">Criar Conta</Link>
+          </Button>
         </div>
 
-        {/* Mobile toggle */}
-        <button className="md:hidden text-foreground" onClick={() => setIsOpen(!isOpen)}>
+        <button className="text-foreground md:hidden" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
@@ -47,21 +46,25 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden glass border-t border-border/50"
+            className="glass border-t border-border/50 md:hidden"
           >
-            <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+            <div className="container mx-auto flex flex-col gap-3 px-4 py-4">
               {links.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="text-sm text-muted-foreground hover:text-foreground py-2"
+                  className="py-2 text-sm text-muted-foreground hover:text-foreground"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.label}
                 </a>
               ))}
-              <Button variant="glass" size="sm" className="w-full">Entrar</Button>
-              <Button variant="hero" size="sm" className="w-full">Criar Conta</Button>
+              <Button variant="glass" size="sm" className="w-full" asChild>
+                <Link to="/plataforma">Entrar</Link>
+              </Button>
+              <Button variant="hero" size="sm" className="w-full" asChild>
+                <Link to="/plataforma">Criar Conta</Link>
+              </Button>
             </div>
           </motion.div>
         )}

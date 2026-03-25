@@ -57,3 +57,7 @@ class CandidateSensitiveRead(BaseModel):
     document_id: Optional[str]
     linkedin_url: Optional[str]
     consent_to_share_after_hire: bool
+
+
+class CandidateDashboardRead(BaseModel):
+    profile: CandidatePublicRead

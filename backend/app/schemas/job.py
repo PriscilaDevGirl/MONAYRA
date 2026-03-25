@@ -2,6 +2,9 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from app.schemas.candidate import CandidatePublicRead
+from app.schemas.company import CompanyRead
+
 
 class JobCreate(BaseModel):
     company_id: int
@@ -43,3 +46,13 @@ class ApplicationRead(BaseModel):
     recruiter_feedback: Optional[str]
     candidate_feedback: Optional[str]
     sensitive_data_released: bool
+
+
+class CandidateApplicationRead(ApplicationRead):
+    job: JobRead
+    company: CompanyRead
+
+
+class CompanyApplicationRead(ApplicationRead):
+    job: JobRead
+    candidate: CandidatePublicRead
