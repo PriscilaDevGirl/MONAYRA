@@ -147,13 +147,9 @@ export type CompanyRegistrationPayload = {
   password: string;
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() || "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.PROD ? "/api" : "http://localhost:8000/api");
 
 function getApiBaseUrl() {
-  if (!import.meta.env.VITE_API_BASE_URL && import.meta.env.PROD) {
-    throw new Error("A API nao esta configurada neste deploy. Defina VITE_API_BASE_URL.");
-  }
-
   return API_BASE_URL;
 }
 

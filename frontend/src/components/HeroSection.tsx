@@ -15,7 +15,7 @@ const HeroSection = () => {
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="mx-auto max-w-4xl">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="glass mb-8 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm text-muted-foreground">
             <Sparkles className="h-4 w-4 text-secondary" />
-            Empregabilidade inclusiva e sem vies
+            Empregabilidade inclusiva e sem viés
           </motion.div>
 
           <h1 className="mb-6 text-5xl font-bold leading-tight md:text-7xl lg:text-8xl font-display">
@@ -26,7 +26,7 @@ const HeroSection = () => {
 
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
             A plataforma que conecta mulheres cis, trans e travestis a oportunidades reais.
-            Sem preconceito. Sem vies. Com respeito a sua identidade.
+            Sem preconceito. Sem viés. Com respeito a sua identidade.
           </p>
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row">

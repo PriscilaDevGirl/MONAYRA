@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.schemas.candidate import CandidatePublicRead
 from app.schemas.company import CompanyRead
@@ -21,6 +21,7 @@ class JobCreate(BaseModel):
 
 
 class JobRead(JobCreate):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     is_active: bool
 
@@ -36,6 +37,7 @@ class ApplicationStageUpdate(BaseModel):
 
 
 class ApplicationRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     candidate_id: int
     job_id: int
@@ -49,10 +51,12 @@ class ApplicationRead(BaseModel):
 
 
 class CandidateApplicationRead(ApplicationRead):
+    model_config = ConfigDict(from_attributes=True)
     job: JobRead
     company: CompanyRead
 
 
 class CompanyApplicationRead(ApplicationRead):
+    model_config = ConfigDict(from_attributes=True)
     job: JobRead
     candidate: CandidatePublicRead

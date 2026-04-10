@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CandidateCreate(BaseModel):
@@ -33,6 +33,7 @@ class CandidateCreate(BaseModel):
 
 
 class CandidatePublicRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     social_name: str
     self_declared_gender: str
@@ -54,6 +55,7 @@ class CandidatePublicRead(BaseModel):
 
 
 class CandidateSensitiveRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     legal_name: str
     email: str
     phone: str
@@ -63,6 +65,7 @@ class CandidateSensitiveRead(BaseModel):
 
 
 class CandidateDashboardRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     profile: CandidatePublicRead
     linkedin_url: Optional[str] = None
     portfolio_url: Optional[str] = None

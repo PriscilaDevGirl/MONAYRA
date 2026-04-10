@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 from app.schemas.candidate import CandidateCreate, CandidatePublicRead
 from app.schemas.company import CompanyCreate, CompanyRead
@@ -29,12 +29,14 @@ class CompanyRegistration(BaseModel):
 
 
 class CandidateRegistrationRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     account_id: int
     role: str
     candidate: CandidatePublicRead
 
 
 class CompanyRegistrationRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     account_id: int
     role: str
     company: CompanyRead

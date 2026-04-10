@@ -1078,7 +1078,7 @@ const Platform = () => {
                       <Input name="website" placeholder="Site" value={companyForm.website} onChange={updateSetter(setCompanyForm)} />
                       <Textarea name="inclusive_commitments" placeholder="Compromissos inclusivos" value={companyForm.inclusive_commitments} onChange={updateSetter(setCompanyForm)} required />
                       <Input name="password" type="password" placeholder="Senha" value={companyForm.password} onChange={updateSetter(setCompanyForm)} required />
-                      <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground"><Checkbox checked={companyForm.bias_training_enabled} onCheckedChange={(checked) => setCompanyForm((current) => ({ ...current, bias_training_enabled: Boolean(checked) }))} />Time treinado em vies inconsciente</label>
+                      <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground"><Checkbox checked={companyForm.bias_training_enabled} onCheckedChange={(checked) => setCompanyForm((current) => ({ ...current, bias_training_enabled: Boolean(checked) }))} />Time treinado em viés inconsciente</label>
                       <Button type="submit" variant="hero" className="w-full" disabled={busy}>Criar conta da empresa</Button>
                     </form>
                   )}

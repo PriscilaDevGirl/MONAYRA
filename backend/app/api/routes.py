@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
-from app.db.database import create_db_and_tables, get_session
+from app.db.database import create_db_and_tables, engine, get_session
+from app.db.seed import seed_demo_data
 from app.models.auth import UserAccount
 from app.models.company import Company
 from app.models.job import JobApplication, JobPosting
@@ -41,6 +42,8 @@ api_router = APIRouter(prefix="/api")
 @api_router.on_event("startup")
 def on_startup() -> None:
     create_db_and_tables()
+    with Session(engine) as session:
+        seed_demo_data(session)
 
 
 def _create_candidate_profile(payload: CandidateCreate, session: Session) -> CandidateProfile:

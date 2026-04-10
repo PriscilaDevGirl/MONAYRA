@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class CompanyCreate(BaseModel):
@@ -12,10 +12,12 @@ class CompanyCreate(BaseModel):
 
 
 class CompanyRead(CompanyCreate):
+    model_config = ConfigDict(from_attributes=True)
     id: int
 
 
 class CompanyDashboardRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     company: CompanyRead
     open_positions: int
     applications_in_pipeline: int
